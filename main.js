@@ -29,15 +29,22 @@ function read_input_file (filepath) {
 }
 
 
-function preprocess_input_data (contents) {
+function preprocess_input_data (data, sort=false) {
     // extract elevator queue
     // trim bad data
     // validate against other parameters
 
-    var raw_queue = contents.split('\n').slice(-1)[0];
-    var sorted_queue = raw_queue.split(',').map(x => eval(x)).sort((x,y) => x - y);
+    var raw_queue = data.split('\n').slice(-1)[0];
+    var queue = raw_queue.split(',').map(x => eval(x))
 
-    return sorted_queue
+    // filter out requests > M ??
+
+    // keep ticket number??
+    //data.split('\n').slice(-1)[0].split(',').map((x,i) => [i,x])
+
+    if (sort) {queue.sort((x,y) => x - y)};
+
+    return queue
 
 }
 
@@ -86,13 +93,52 @@ function time_trip (dest) {
 
 function execute_trip (plan) {
     /*
-    takes in object with groups of trips
+    takes in array of with groups of trips
     executes trips
     times trips
     returns total time
     */
 
+    var total_time = 0;
+    plan.forEach(function(trip) {
+        total_time += time_trip(trip);
+    })
+    return total_time
+
 }
+
+
+function incremental (queue) {
+    /*
+    simple plan, goes up in reverse order of sorted queue
+    */
+    var plan = [];
+    var i = 0;
+    var rev_queue = [...queue].reverse();
+    while (i < rev_queue.length) {
+        plan.push(rev_queue.slice(i, Q + i))
+        i += Q
+    };
+
+    return plan;
+}
+
+
+
+function write_results (plan, time) {
+    /*
+    how best to display this??
+    trip groups
+        passenger number in queue?
+        destination floor?
+    time per trip
+    total time at bottom
+    */
+    return 0
+}
+
+
+
 
 function main () {
 
@@ -110,8 +156,7 @@ function main () {
 
     remainder (non-full car) goes to first floors
 
-    
-
+    assume it doesn't matter how quickly it is fulfilled to individual people? like if we save the bottom for the end they won't be pissed? i mean they should just take the stairs right?
 
 
 
