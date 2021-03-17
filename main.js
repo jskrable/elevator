@@ -107,7 +107,8 @@ function execute_trip (plan) {
     returns total time
     */
 
-    // NEED TO THREAD BY NUMBER OF ELEVATORS HERE TO SAVE TIME
+    // NEED TO THREAD BY NUMBER OF ELEVATORS HERE TO SAVE TIME??
+    // maybe just call this M times and then the longest overall elevator time is the total? Since the overlap is running in parallel?
 
     var total_time = 0;
     plan.forEach(function(trip) {
@@ -149,16 +150,95 @@ function write_results (plan, time) {
 }
 
 
+function divide_work (trips) {
+
+    /*
+    partition trip times array into M subarrays with (hopefully) equal sum
+    if not possible, just get close.
+    */
+    sum = trips.reduce((a,v) => a + v);
+
+    if (sum % M == 0) {console.log('good split')}
+    
+    while 
+
+}
+
+function sum (array) {
+    return array.reduce((a,v) => a + v)
+}
 
 
-function main () {
+function split_to_equal_subarrays (array, K) {
 
-    var data = read_input_file();
+    /*
+    takes in an array and a K to group into
+    splits array into K groups of equal sum
+    returns nested array of groups
+    */
+
+    //array = [1,2,3,4,5]
+    //K = 3
+
+
+    // find a way to do this without sorting???
+    array.sort((x,y) => x - y)
+
+    var total = sum(array);
+
+/*    if !(total % K == 0) {
+        console.log('no perfect split');
+        return -1;
+    }*/
+
+    //array_copy = [...array]
+
+    var taken = [...array].map(x => false);
+    var target = total / K;
+    var i = 0;
+    var solution = [];
+
+    for (i; i < array.length; i++) {
+        group = [array[i]];
+        if (sum(group) == target) {
+            console.log('single solution, pushing ' + array[i])
+            solution.push(group);
+            continue;
+        }
+        var j = i + 1;
+        for (j; j < array.length; j++) {
+            subtotal = sum(group) + array[j];
+            if (subtotal == target) {
+                group.push(array[j]);
+                console.log('compound solution, pushing ' + group)
+                solution.push(group);
+                //group.map(x => solution[x] = true);
+                break;
+            } else if (subtotal > target) {
+                group = [array[i]];
+                continue;
+            } else if (subtotal < target) {
+                group.push(array[j]);
+            }
+        }
+    }
+
+    return solution;
+
+}
+
+
+
+function scratch () {
+
+    var data = read_input_file('./test/input-files/input1.txt');
     // sorted!?
     var queue = preprocess_input_data(data);
     var map = floor_map(queue);
     var remainder = queue.length % Q;
 
+    trips = incremental(queue).map(x => time_trip(x));
+    total = trips.reduce((a,v) => a + v);
 
     /*
     PRIORITY????
