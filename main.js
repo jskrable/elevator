@@ -126,7 +126,7 @@ function incremental (queue) {
     */
     var plan = [];
     var i = 0;
-    var rev_queue = [...queue].reverse();
+    var rev_queue = [...queue].sort((x,y) => y-x).reverse();
     while (i < rev_queue.length) {
         plan.push(rev_queue.slice(i, Q + i))
         i += Q
@@ -150,17 +150,72 @@ function write_results (plan, time) {
 }
 
 
-function divide_work (trips) {
+function divide_work (trips, K) {
 
     /*
     partition trip times array into M subarrays with (hopefully) equal sum
     if not possible, just get close.
-    */
-    sum = trips.reduce((a,v) => a + v);
 
-    if (sum % M == 0) {console.log('good split')}
+    WORKS WITH PERFECT DATA
+
+    HOW TO GET IT CLOSE?
     
-    while 
+    */
+    var total_sum = sum(trips);
+    var target = total_sum / K;
+    //var pre_sum = prefix_sum(trips);
+    var solution = [];
+    var copy = [...trips];
+    var i = 0;
+    var count = 0;
+    while (copy.length > 0 && count < 100) {
+        var copy2 = [...copy];
+        var group = [copy[0]];
+        if (sum(group) == target) {
+            solution.push(group);
+            break;
+        }
+        copy.splice(0,1);
+        var j = 0;
+        //count++;
+        while (j < copy.length && count < 100) {
+            console.log('trying j=' + j)
+            count++;
+            if (sum(group) == target) {
+                solution.push(group);
+                break;
+            } else if (sum(group) + copy[j] == target) {
+                console.log('found')
+                group.push(copy[j]);
+                console.log('copy='+copy)
+                console.log('group='+group)
+                solution.push(group);
+                copy.splice(j,1);
+                i = 0;
+                break;
+            } else if (sum(group) + copy[j] > target) {
+                console.log('reset')
+                console.log(copy)
+                copy = [...copy2]
+                group = [copy[0]];
+                copy.splice(0,1);
+                console.log(copy)
+                j++;
+                continue;
+            } else if (sum(group) + copy[j] < target) {
+                console.log('keep adding')
+                group.push(copy[j]);
+                copy.splice(j,1);
+                console.log('copy='+copy)
+                console.log('group='+group)
+                //j++;
+                continue;
+            }
+        }
+    }
+
+
+    return solution;
 
 }
 
@@ -169,64 +224,14 @@ function sum (array) {
 }
 
 
-function split_to_equal_subarrays (array, K) {
+function prefix_sum (array) {
+    var result = array.reduce((a,c,i,o) => 
+        (a.length > 0 ? 
+            a.concat([sum(o.slice(0,i)) + c]) : 
+            a.concat([c])), a=[]);
 
-    /*
-    takes in an array and a K to group into
-    splits array into K groups of equal sum
-    returns nested array of groups
-    */
-
-    //array = [1,2,3,4,5]
-    //K = 3
-
-
-    // find a way to do this without sorting???
-    array.sort((x,y) => x - y)
-
-    var total = sum(array);
-
-/*    if !(total % K == 0) {
-        console.log('no perfect split');
-        return -1;
-    }*/
-
-    //array_copy = [...array]
-
-    var taken = [...array].map(x => false);
-    var target = total / K;
-    var i = 0;
-    var solution = [];
-
-    for (i; i < array.length; i++) {
-        group = [array[i]];
-        if (sum(group) == target) {
-            console.log('single solution, pushing ' + array[i])
-            solution.push(group);
-            continue;
-        }
-        var j = i + 1;
-        for (j; j < array.length; j++) {
-            subtotal = sum(group) + array[j];
-            if (subtotal == target) {
-                group.push(array[j]);
-                console.log('compound solution, pushing ' + group)
-                solution.push(group);
-                //group.map(x => solution[x] = true);
-                break;
-            } else if (subtotal > target) {
-                group = [array[i]];
-                continue;
-            } else if (subtotal < target) {
-                group.push(array[j]);
-            }
-        }
-    }
-
-    return solution;
-
+    return result;
 }
-
 
 
 function scratch () {
@@ -237,9 +242,10 @@ function scratch () {
     var map = floor_map(queue);
     var remainder = queue.length % Q;
 
-    trips = incremental(queue).map(x => time_trip(x));
+    trips = incremental(queue.map(x => x[1])).map(x => time_trip(x));
     total = trips.reduce((a,v) => a + v);
 
+    divide_work(trips)
     /*
     PRIORITY????
 
