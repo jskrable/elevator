@@ -34,15 +34,13 @@ function preprocess_input_data (data, sort=false) {
     // trim bad data
     // validate against other parameters
 
-    var raw_queue = data.split('\n').slice(-1)[0];
-    var queue = raw_queue.split(',').map(x => eval(x))
-
     // filter out requests > M ??
 
+    var raw_queue = data.split('\n').slice(-1)[0];
+    //var queue = raw_queue.split(',').map(x => eval(x))
     // keep ticket number??
-    //data.split('\n').slice(-1)[0].split(',').map((x,i) => [i,x])
-
-    if (sort) {queue.sort((x,y) => x - y)};
+    var queue = raw_queue.split(',').map((x,i) => [i,eval(x)]);
+    //if (sort) {queue.sort((x,y) => x - y)};
 
     return queue
 
@@ -55,13 +53,23 @@ function floor_map (queue) {
     returns object with unique keys and count of each key in original array
     */
     var map = {};
-    queue.forEach(function(item) {
+/*    queue.forEach(function(item) {
         if (map.hasOwnProperty(item)) {
             map[item] += 1
         } else {
             map[item] = 1
         }
     });
+    */
+
+    queue.forEach(function(item) {
+        if (map.hasOwnProperty(item[1])) {
+            map[item[1]].push(item[0])
+        } else {
+            map[item[1]] = [item[0]]
+        }
+    });
+
     return map;
 }
 
@@ -99,6 +107,8 @@ function execute_trip (plan) {
     returns total time
     */
 
+    // NEED TO THREAD BY NUMBER OF ELEVATORS HERE TO SAVE TIME
+
     var total_time = 0;
     plan.forEach(function(trip) {
         total_time += time_trip(trip);
@@ -111,6 +121,7 @@ function execute_trip (plan) {
 function incremental (queue) {
     /*
     simple plan, goes up in reverse order of sorted queue
+    1500~ s for test1
     */
     var plan = [];
     var i = 0;
