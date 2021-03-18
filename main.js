@@ -159,7 +159,7 @@ function divide_work (trips, K) {
     WORKS WITH PERFECT DATA
 
     HOW TO GET IT CLOSE?
-    
+
     */
     var total_sum = sum(trips);
     var target = total_sum / K;
@@ -178,8 +178,10 @@ function divide_work (trips, K) {
         copy.splice(0,1);
         var j = 0;
         //count++;
-        while (j < copy.length && count < 100) {
+        while (j < copy.length && count < 10000) {
             console.log('trying j=' + j)
+            console.log('copy='+copy)
+            console.log('group='+group)
             count++;
             if (sum(group) == target) {
                 solution.push(group);
@@ -213,10 +215,52 @@ function divide_work (trips, K) {
             }
         }
     }
+    if (solution.length < K) {
+        console.log('no perfect solution...')
+
+        // DO SOMETHING HERE
+        // duplicates on len == odd 
+        // adds too much to first bucket
+        function round_robin (trips, K) {
+            trips.sort((x,y) => x - y);
+            var trips_rev = [...trips].reverse()
+            var size = trips.length;
+            var buckets = [...Array(K)].map(x => []);
+            if (size % 2 == 0) {
+                var mid = size / 2;
+            } else {
+                var mid = Math.ceil(size / 2)
+            }
+
+            for (let i=0; i < mid; i++) {
+                console.log('adding ' + trips[i])
+                buckets[i % K].push(trips[i])
+                buckets[i % K].push(trips_rev[i])
+            }
+
+            return buckets
+
+        }
+
+        trips.sort((x,y) => x - y);
+        var trips_rev = [...trips].reverse()
+        var size = trips.length;
+        var buckets = [...Array(K)].map(x => []);
+        if (size % 2 == 0) {
+            var mid = size / 2;
+        } else {
+            var mid = Math.ceil(size / 2)
+        }
+
+        for (let i=0; i < mid; i++) {
+            console.log('adding ' + trips[i])
+            buckets[i % K].push(trips[i])
+            buckets[i % K].push(trips_rev[i])
+        }
 
 
+    }
     return solution;
-
 }
 
 function sum (array) {
